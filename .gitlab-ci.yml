@@ -1,46 +1,61 @@
----
-image: docker-ro.laputa.veracode.io/agora/buildbox:centos7-m1-java8-latest
-
+# Definicao dos stages
 stages:
-    - build
-    - scan
+    - Artifact
+    - SAST
 
-maven:
-    stage: build
+variables:
+    APP_Profile: "GitLab.${CI_PROJECT_NAME}"
+    Caminho_Arquivo: "target/verademo.war"
+
+# Cria o ZIP com os arquivos conforme a documentacao da Veracode
+packaging:
+    image: maven:3.3.9-jdk-8
+    stage: Artifact
     script:
-        - yum -y install maven
-        - mvn compile package
+        - mvn package
     artifacts:
         paths:
-            - target/verademo.war
+            - $Caminho_Arquivo
 
-development-upload-for-sast:
-    stage: scan
-    only:
-        - development
+# Utiliza o SCA para fazer a analise de componentes de terceiros
+sca:
+        image: openjdk:8
+        stage: Artifact
+        when: always
+        script:
+            - curl -sSL 'https://download.sourceclear.com/ci.sh' | bash -s – scan --update-advisor
+
+# Inicia a analise SAST/SCA por meio do Wrapper
+Veracode_UploadAndScan:
+    image: veracode/api-wrapper-java
+    stage: SAST
     script:
-        - java -jar $HOME/helpers/VeracodeJavaAPI.jar -vid ${TEAM_ANALYSISCENTER_ID} -vkey ${TEAM_ANALYSISCENTER_KEY}
-          -action UploadAndScan -appname "Verademo" -createprofile false -autoscan true -sandboxname "gitlab-development"
-          -filepath ./target/verademo.war -version "Job ${CI_JOB_ID} in pipeline ${CI_PIPELINE_ID}"
-    allow_failure: true
-    
-release-upload-for-sast:
-    stage: scan
-    only:
-        - release
-    script:
-        - java -jar $HOME/helpers/VeracodeJavaAPI.jar -vid ${TEAM_ANALYSISCENTER_ID} -vkey ${TEAM_ANALYSISCENTER_KEY}
-          -action UploadAndScan -appname "Verademo" -createprofile false -autoscan true -sandboxname "gitlab-release"
-          -filepath ./target/verademo.war -version "Job ${CI_JOB_ID} in pipeline ${CI_PIPELINE_ID}"
-    allow_failure: true
-    
-policy-upload-for-sast:
-    stage: scan
-    only:
-        - schedules
-        - master
-    script:
-        - java -jar $HOME/helpers/VeracodeJavaAPI.jar -vid ${TEAM_ANALYSISCENTER_ID} -vkey ${TEAM_ANALYSISCENTER_KEY}
-          -action UploadAndScan -appname "Verademo" -createprofile false -autoscan true
-          -filepath ./target/verademo.war -version "Job ${CI_JOB_ID} in pipeline ${CI_PIPELINE_ID}"
-          -scantimeout 15
+        - java -jar /opt/veracode/api-wrapper.jar
+          -action UploadAndScan
+          -vid "${VeracodeID}"
+          -vkey "${VeracodeKey}"
+          -appname $APP_Profile
+          -createprofile true
+          -autoscan true
+          -criticality VeryHigh
+          -filepath $Caminho_Arquivo
+          -version "${CI_JOB_ID}"
+    dependencies:
+        - packaging
+
+# Utiliza o Pipeline Scan para uma analise mais rapida e validar quebra por erros encontrados
+pipeline_scan:
+        image: openjdk:8
+        stage: SAST
+        dependencies:
+        - packaging
+        when: always
+        script:
+            - curl -O https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
+            - unzip pipeline-scan-LATEST.zip pipeline-scan.jar
+            - java -jar pipeline-scan.jar
+                --veracode_api_id "${VeracodeID}"
+                --veracode_api_key "${VeracodeKey}"
+                --file "$Caminho_Arquivo"
+                --gl_issue_generation true
+                --issue_details true
