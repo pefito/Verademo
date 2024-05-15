@@ -47,7 +47,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: artfacts
-          path: .
+          path: ${{ vars.TARGET_FILE_NAME }}
 
   Veracode-SAST-Pipeline:
     name: Veracode SAST Pipeline
@@ -58,7 +58,7 @@ jobs:
     env:
       TARGET_FILE_NAME: target/verademo.war
       APPLICATION_NAME: Verademo-java-1
-      POLICY_NAME: Veracode Recommended Medium
+      POLICY_NAME: Veracode Recommended High
     container:
       image: veracode/pipeline-scan:latest
       options: --user root
