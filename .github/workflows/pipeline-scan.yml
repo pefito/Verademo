@@ -56,7 +56,6 @@ jobs:
     strategy:
       fail-fast: true
     env:
-      TARGET_FILE_NAME: target/verademo.war
       APPLICATION_NAME: Verademo-java-1
       POLICY_NAME: Veracode Recommended High
     container:
@@ -72,8 +71,8 @@ jobs:
 
       - name: Scan
         run: |
-          # zip -r -v ${{ env.TARGET_FILE_NAME }} . -i '*.js' '*.html'
-          java -jar /opt/veracode/pipeline-scan.jar -vid "${{ secrets.VERACODE_ID }}" -vkey "${{ secrets.VERACODE_KEY }}" -f ${{ env.TARGET_FILE_NAME }} -p "${{ env.APPLICATION_NAME }}" -pn "${{ env.POLICY_NAME }}"
+          # zip -r -v ${{ vars.TARGET_FILE_NAME }} . -i '*.js' '*.html'
+          java -jar /opt/veracode/pipeline-scan.jar -vid "${{ secrets.VERACODE_ID }}" -vkey "${{ secrets.VERACODE_KEY }}" -f ${{ vars.TARGET_FILE_NAME }} -p "${{ env.APPLICATION_NAME }}" -pn "${{ env.POLICY_NAME }}"
         continue-on-error: true
 
       - name: save filtered results file
