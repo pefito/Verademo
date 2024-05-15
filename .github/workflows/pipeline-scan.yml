@@ -1,4 +1,4 @@
-name: Veracode Demo
+name: Veracode Demo - Pipeline
 on:
   push:
     branches:
