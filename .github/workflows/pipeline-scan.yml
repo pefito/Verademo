@@ -48,7 +48,7 @@ jobs:
         with:
           name: artfacts
           path: ${{ vars.TARGET_FILE_NAME }}
-            
+
   Veracode-SAST-Pipeline:
     name: Veracode SAST Pipeline
     runs-on: self-hosted
