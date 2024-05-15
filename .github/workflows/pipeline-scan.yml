@@ -49,6 +49,9 @@ jobs:
         with:
           name: artfacts
           path: ${{ vars.TARGET_FILE_NAME }}
+      - name: Maeven clean
+        run: |
+          mvn clean
 
   Veracode-SAST-Pipeline:
     name: Veracode SAST Pipeline
