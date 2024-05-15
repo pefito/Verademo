@@ -34,7 +34,6 @@ jobs:
     needs: [Veracode-SCA]
     container:
       image: maven:3.9.6-eclipse-temurin-17
-      options: --user root
     steps:
       - name: Checkout https://github.com/${{ github.repository }}@${{ github.ref }}
         uses: actions/checkout@v4
