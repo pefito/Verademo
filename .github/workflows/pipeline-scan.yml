@@ -43,14 +43,14 @@ jobs:
         run: |
           mvn package -DskipTests
           ls -l
+      - name: Maeven clean
+        run: |
+          mvn clean
       - name: Upload artfacts
         uses: actions/upload-artifact@v3
         with:
           name: artfacts
           path: ${{ vars.TARGET_FILE_NAME }}
-      - name: Maeven clean
-        run: |
-          mvn clean
 
   Veracode-SAST-Pipeline:
     name: Veracode SAST Pipeline
