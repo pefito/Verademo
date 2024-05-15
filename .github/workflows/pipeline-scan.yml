@@ -1,4 +1,4 @@
-name: Veracode Test
+name: Veracode Demo
 on:
   push:
     branches:
