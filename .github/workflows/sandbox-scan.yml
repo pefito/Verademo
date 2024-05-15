@@ -1,0 +1,51 @@
+name: Veracode Demo - Sandbox
+on:
+  push:
+    branches:
+      - sandbox-scan
+
+jobs:
+  Build:
+    name: Maeven build
+    runs-on: self-hosted
+    container:
+      image: maven:3.9.6-eclipse-temurin-17
+    steps:
+      - name: Checkout https://github.com/${{ github.repository }}@${{ github.ref }}
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Maeven build
+        run: |
+          mvn package -DskipTests
+          chown 1000:1000 -R target
+      - name: Upload artfacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: artfacts
+          path: ${{ vars.TARGET_FILE_NAME }}
+
+  Veracode-SAST-Policy:
+    name: Veracode Policy Scan
+    runs-on: self-hosted
+    needs: [Build]
+    strategy:
+      fail-fast: true
+    env:
+      APPLICATION_NAME: Verademo-java-1
+    container:
+      image: veracode/api-wrapper-java:latest
+      options: --user root
+
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v3
+        with:
+          name: artfacts
+          path: .
+
+      - name: Scan
+        run: |
+          # zip -r -v ${{ vars.TARGET_FILE_NAME }} . -i '*.js' '*.html'
+          java -jar /opt/veracode/api-wrapper.jar -vid "${{ secrets.VERACODE_ID }}" -vkey "${{ secrets.VERACODE_KEY }}" -action UploadAndScan -createsandbox true -sandboxname "${{ github.ref }}" -createprofile false -appname "${{ env.APPLICATION_NAME }}" -version "${{ github.run_id }}" -filepath ${{ vars.TARGET_FILE_NAME }}
+        continue-on-error: true
