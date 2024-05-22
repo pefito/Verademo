@@ -42,7 +42,7 @@ jobs:
       - name: Maeven build
         run: |
           mvn package -DskipTests
-          chown 1001:1001 -R target
+          chmod -R 755 target
       - name: Upload artfacts
         uses: actions/upload-artifact@v3
         with:
