@@ -80,3 +80,14 @@ jobs:
         with:
           name: filtered-results
           path: filtered_results.json
+
+  Clean:
+    name: Maeven clean
+    runs-on: self-hosted
+    needs: [Veracode-SAST-Pipeline]
+    container:
+      image: maven:3.9.6-eclipse-temurin-17
+    steps:
+
+      - name: Maeven clean
+        run: mvn package clean
