@@ -91,9 +91,10 @@ jobs:
           path: "./"
           recursive: true
           quick: false
-          create-issues: false
+          create-issues: true
           allow-dirty: true
           update_advisor: true
+          github_token: ${{ secrets.GH_ACTIONS_TOKEN }}
         continue-on-error: true
 
 
