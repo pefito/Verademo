@@ -196,8 +196,6 @@ jobs:
           vkey: "${{ secrets.VKEY }}"
           deleteincompletescan: 2
 
-    
-
   Veracode-Sandbox-Scan:
 # esse job possui diversas formas de executar o upload and scan, com o Java Wrapper ou Action.
 # escolha a que melhor se ajustar ao ambiente
@@ -230,3 +228,21 @@ jobs:
           vid: "${{ secrets.VID }}"
           vkey: "${{ secrets.VKEY }}"
           deleteincompletescan: 2
+
+  Push-to-Registry:
+    needs: [Veracode-SCA, Veracode-SAST-Pipeline]
+    name: Push to Container Registry
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to Container Registry
+        run: |
+          echo "Push to Container Registry"
+
+  Deploy:
+    needs: [Push-to-Registry]
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy
+        run: |
+          echo "Deploy"
