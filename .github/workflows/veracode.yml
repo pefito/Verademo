@@ -56,7 +56,7 @@ jobs:
           path: ${{env.package_path}}/${{env.package_name}}
 
   Veracode-SCA:
-    if: github.ref == 'refs/heads/pipeline-scan'
+    #if: github.ref == 'refs/heads/pipeline-scan'
     name: Veracode SCA Pipeline
     runs-on: ubuntu-latest
     strategy:
@@ -136,22 +136,22 @@ jobs:
 
       - name: Pipeline Scan with wrapper - default policy
         env:
-          POLICY_NAME: Veracode Recommended Medium
+          POLICY_NAME: Veracode Recommended High
         run: |
           curl -O -L https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
           unzip -u pipeline-scan-LATEST.zip
-          java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" --file "./${{env.package_path}}/${{env.package_name}}" -pn "${{ env.POLICY_NAME }}" --issue_details true --json_output true
+          java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" --file "./${{env.package_path}}/${{env.package_name}}" -pn "${{ env.POLICY_NAME }}" --issue_details false --json_output true
         continue-on-error: true
 
-      - name: Pipeline Scan with wrapper - custom policy
-        env:
-          POLICY_NAME: Policy-test-2
-        run: |
-          curl -O -L https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
-          unzip -u pipeline-scan-LATEST.zip
-          java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" -rp "${{ env.POLICY_NAME }}"
-          java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" --file "./${{env.package_path}}/${{env.package_name}}" --policy_file "${{ env.POLICY_NAME }}.json" --json_output true
-        continue-on-error: true
+      # - name: Pipeline Scan with wrapper - custom policy
+      #   env:
+      #     POLICY_NAME: Policy-test-2
+      #   run: |
+      #     curl -O -L https://downloads.veracode.com/securityscan/pipeline-scan-LATEST.zip
+      #     unzip -u pipeline-scan-LATEST.zip
+      #     java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" -rp "${{ env.POLICY_NAME }}"
+      #     java -jar pipeline-scan.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" --file "./${{env.package_path}}/${{env.package_name}}" --policy_file "${{ env.POLICY_NAME }}.json" --json_output true
+      #   continue-on-error: true
 
       - name: Pipeline Scan with Action by Veracode
       # https://github.com/marketplace/actions/veracode-pipeline-scan
@@ -216,10 +216,10 @@ jobs:
           name: artfacts
           path: ./${{env.package_path}}
 
-      - name: Upload and Scan
-        run: |
-          curl -L -o veracode-wrapper.jar https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/24.7.14.0/vosp-api-wrappers-java-24.7.14.0.jar
-          java -jar veracode-wrapper.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" -action UploadAndScan -deleteincompletescan 2 -createprofile true -appname "${{ env.APPLICATION_NAME }}" -version "${{ github.run_id }}" -filepath "./${{env.package_path}}/${{env.package_name}}" -createsandbox true -sandboxname "${{ github.ref }}" 
+      # - name: Upload and Scan
+      #   run: |
+      #     curl -L -o veracode-wrapper.jar https://repo1.maven.org/maven2/com/veracode/vosp/api/wrappers/vosp-api-wrappers-java/24.7.14.0/vosp-api-wrappers-java-24.7.14.0.jar
+      #     java -jar veracode-wrapper.jar -vid "${{ secrets.VID }}" -vkey "${{ secrets.VKEY }}" -action UploadAndScan -deleteincompletescan 2 -createprofile true -appname "${{ env.APPLICATION_NAME }}" -version "${{ github.run_id }}" -filepath "./${{env.package_path}}/${{env.package_name}}" -createsandbox true -sandboxname "${{ github.ref }}" 
 
       - name: Upload and Scan - Action
         uses: veracode/veracode-uploadandscan-action@0.2.7
@@ -229,6 +229,52 @@ jobs:
           vid: "${{ secrets.VID }}"
           vkey: "${{ secrets.VKEY }}"
           deleteincompletescan: 2
+          sandboxname: "Feature A"
+          createsandbox: true
+
+      - name: Upload and Scan - Action
+        uses: veracode/veracode-uploadandscan-action@0.2.7
+        with:
+          appname: "Verademo-java-1"
+          filepath: "./${{env.package_path}}/${{env.package_name}}"
+          vid: "${{ secrets.VID }}"
+          vkey: "${{ secrets.VKEY }}"
+          deleteincompletescan: 2
+          sandboxname: "Feature B"
+          createsandbox: true
+
+      - name: Upload and Scan - Action
+        uses: veracode/veracode-uploadandscan-action@0.2.7
+        with:
+          appname: "Verademo-java-1"
+          filepath: "./${{env.package_path}}/${{env.package_name}}"
+          vid: "${{ secrets.VID }}"
+          vkey: "${{ secrets.VKEY }}"
+          deleteincompletescan: 2
+          sandboxname: "Branch: Hotfix 1"
+          createsandbox: true
+
+      - name: Upload and Scan - Action
+        uses: veracode/veracode-uploadandscan-action@0.2.7
+        with:
+          appname: "Verademo-java-1"
+          filepath: "./${{env.package_path}}/${{env.package_name}}"
+          vid: "${{ secrets.VID }}"
+          vkey: "${{ secrets.VKEY }}"
+          deleteincompletescan: 2
+          sandboxname: "Branch: Develop"
+          createsandbox: true
+
+      - name: Upload and Scan - Action
+        uses: veracode/veracode-uploadandscan-action@0.2.7
+        with:
+          appname: "Verademo-java-1"
+          filepath: "./${{env.package_path}}/${{env.package_name}}"
+          vid: "${{ secrets.VID }}"
+          vkey: "${{ secrets.VKEY }}"
+          deleteincompletescan: 2
+          sandboxname: "Branch: John"
+          createsandbox: true
 
   Push-to-Registry:
     needs: [Veracode-SCA, Veracode-SAST-Pipeline, Veracode-Sandbox-Scan]
