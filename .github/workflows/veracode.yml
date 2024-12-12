@@ -33,7 +33,7 @@ env:
 
 jobs:
   call-reusable-workflow:
-    uses: phelipeavila/veracode-workflows/.workflows/veracode.yml@main
+    uses: phelipeavila/veracode-workflows/.github/workflows/veracode.yml@main
 #   Package:
 #     name: Veracode Package
 #     runs-on: ubuntu-latest
