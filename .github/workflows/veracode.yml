@@ -34,6 +34,7 @@ env:
 jobs:
   call-reusable-workflow:
     uses: pefito/veracode-workflows/.github/workflows/veracode.yml@main
+    secrets: inherit
 #   Package:
 #     name: Veracode Package
 #     runs-on: ubuntu-latest
