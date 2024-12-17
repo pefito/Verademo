@@ -9,22 +9,27 @@ on:
 
 jobs:
   package:
+    name: Package application
     uses: pefito/veracode-workflows/.github/workflows/package.yml@main
     secrets: inherit
   scan:
+    uses: pefito/veracode-workflows/.github/workflows/pipeline-scan.yml@main
+    secrets: inherit
     name: Veracode Scan
-    runs-on: ubuntu-latest
-    needs: package
-    strategy:
-      matrix:
-        packages: ${{ fromJson(needs.package.outputs.packages) }}
-    steps:
-      - name: Veracode Package
-        env:
-          VERACODE_API_KEY_ID: ${{ secrets.VID }}
-          VERACODE_API_KEY_SECRET: ${{ secrets.VKEY }}
-        run: |
-          ls -lah .
+    with:
+      packages: ${{ needs.package.outputs.packages }}
+    # runs-on: ubuntu-latest
+    # needs: package
+    # strategy:
+    #   matrix:
+    #     packages: ${{ fromJson(needs.package.outputs.packages) }}
+    # steps:
+    #   - name: Veracode Package
+    #     env:
+    #       VERACODE_API_KEY_ID: ${{ secrets.VID }}
+    #       VERACODE_API_KEY_SECRET: ${{ secrets.VKEY }}
+    #     run: |
+    #       ls -lah .
 
 
 
