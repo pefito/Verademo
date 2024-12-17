@@ -15,6 +15,7 @@ jobs:
   scan:
     uses: pefito/veracode-workflows/.github/workflows/pipeline-scan.yml@main
     secrets: inherit
+    needs: package
     name: Veracode Scan
     with:
       packages: ${{ needs.package.outputs.packages }}
